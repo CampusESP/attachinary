@@ -2,7 +2,19 @@ module Attachinary
   module Utils
 
     def self.process_json(json, scope=nil)
-      [JSON.parse(json)].flatten.compact.map do |data|
+      parsed_json = begin
+        [JSON.parse(json)]
+      rescue JSON::ParserError
+        ''
+      end
+
+      # If we couldn't parse the JSON, return an empty string. We
+      # don't want to return a nil value here, otherwise the gem will
+      # think we want to clear the current value. We simply want to
+      # add an error
+      return parsed_json if parsed_json.blank?
+
+      parsed_json.flatten.compact.map do |data|
         process_hash(data, scope)
       end
     end
