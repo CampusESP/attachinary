@@ -36,6 +36,12 @@ module Attachinary
           input = [input].flatten
           input = (options[:single] ? input[0] : input)
         end
+
+        if input.blank?
+          errors.add(:base, "unable to process #{options[:scope]}".humanize)
+          return nil
+        end
+
         send("orig_#{options[:scope]}=", input)
       end
     end

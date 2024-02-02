@@ -16,13 +16,13 @@ describe Note do
       after(:each) do
         Cloudinary.config.delete_field(:attachinary_keep_remote) if Cloudinary.config.respond_to?(:attachinary_keep_remote)
       end
-      
+
       it "destroys attached files" do
         note = create(:note, photo: photo)
         Cloudinary::Uploader.should_receive(:destroy).with(photo.public_id)
         note.destroy
       end
-      
+
       it "keeps attached files if Cloudinary.config.attachinary_keep_remote == true" do
         Cloudinary.config.attachinary_keep_remote = true
         note = create(:note, photo: photo)
@@ -64,6 +64,15 @@ describe Note do
         file = build(:file)
         subject.photo = "[null]"
         subject.photo.should be_nil
+      end
+
+      it 'adds errors for unparseable JSON' do
+        file = build(:file)
+        subject.photo = file.to_json
+        subject.photo.public_id.should == file.public_id
+        subject.photo = "non-JSON string"
+        subject.photo.public_id.should == file.public_id
+        subject.errors.messages_for(:base).should include('Unable to process photo')
       end
 
       it 'accepts IO objects' do
